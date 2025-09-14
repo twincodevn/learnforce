@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
-import { prisma } from "@/lib/database/prisma";
-import { calculateLevel, getXpReward, getStreakBonus } from "@/lib/utils/gamification";
+import { supabaseAdmin } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,11 +11,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { lessonId, score, timeSpent, answers } = await request.json();
+    const { lessonId, score, timeSpent } = await request.json();
 
-    if (!lessonId || score === undefined) {
+    if (!lessonId || score === undefined || timeSpent === undefined) {
       return NextResponse.json(
-        { message: "Lesson ID and score are required" },
+        { message: "Missing required fields" },
         { status: 400 }
       );
     }
@@ -24,87 +23,68 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     // Get lesson details
-    const lesson = await prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: { subject: true },
-    });
+    const { data: lesson, error: lessonError } = await supabaseAdmin
+      .from('lessons')
+      .select('*, subject:subjects(*)')
+      .eq('id', lessonId)
+      .single();
 
-    if (!lesson) {
+    if (lessonError || !lesson) {
       return NextResponse.json({ message: "Lesson not found" }, { status: 404 });
     }
 
-    // Calculate XP earned
-    const baseXp = getXpReward(score, lesson.xpReward);
-    const streakBonus = getStreakBonus(0); // This would be calculated from user's current streak
-    const totalXpEarned = baseXp + (baseXp * streakBonus);
+    // Calculate XP earned (simplified)
+    const baseXp = Math.floor(score * 10); // 10 XP per 10% score
+    const totalXpEarned = baseXp;
 
     // Update user progress
-    const userProgress = await prisma.userProgress.upsert({
-      where: {
-        userId_subjectId_lessonId: {
-          userId,
-          subjectId: lesson.subjectId,
-          lessonId,
-        },
-      },
-      update: {
-        completed: true,
+    const { error: progressError } = await supabaseAdmin
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        subject_id: lesson.subject_id,
+        lesson_id: lessonId,
         score,
-        timeSpent,
-        xpEarned: totalXpEarned,
-        completedAt: new Date(),
-      },
-      create: {
-        userId,
-        subjectId: lesson.subjectId,
-        lessonId,
-        completed: true,
-        score,
-        timeSpent,
-        xpEarned: totalXpEarned,
-        completedAt: new Date(),
-      },
-    });
-
-    // Update user's total XP and stats
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        xp: {
-          increment: totalXpEarned,
-        },
-        totalLessons: {
-          increment: 1,
-        },
-        totalTime: {
-          increment: timeSpent ? Math.floor(timeSpent / 60) : 0, // Convert seconds to minutes
-        },
-        lastActiveAt: new Date(),
-      },
-    });
-
-    // Calculate new level
-    const newLevelData = calculateLevel(updatedUser.xp);
-    const leveledUp = newLevelData.current > updatedUser.level;
-
-    // Update user level if they leveled up
-    if (leveledUp) {
-      await prisma.user.update({
-        where: { id: userId },
-        data: { level: newLevelData.current },
+        completed_at: new Date().toISOString(),
+        time_spent_minutes: Math.floor(timeSpent / 60),
+        xp_earned: totalXpEarned,
       });
+
+    if (progressError) {
+      throw progressError;
     }
 
-    // Check for new achievements
-    const achievements = await checkAchievements(userId, updatedUser);
+    // Update user stats using RPC function
+    const { error: userError } = await supabaseAdmin.rpc('update_user_stats', {
+      user_id: userId,
+      xp_gained: totalXpEarned,
+      time_spent_minutes: Math.floor(timeSpent / 60)
+    });
+
+    if (userError) {
+      throw userError;
+    }
+
+    // Get updated user data
+    const { data: user, error: userDataError } = await supabaseAdmin
+      .from('users')
+      .select('xp, level, current_streak, total_lessons_completed')
+      .eq('id', userId)
+      .single();
+
+    if (userDataError) {
+      throw userDataError;
+    }
 
     return NextResponse.json({
       success: true,
       xpEarned: totalXpEarned,
-      newTotalXp: updatedUser.xp,
-      leveledUp,
-      newLevel: newLevelData.current,
-      achievements,
+      userStats: {
+        xp: user.xp,
+        level: user.level,
+        streak: user.current_streak,
+        totalLessons: user.total_lessons_completed,
+      },
     });
   } catch (error) {
     console.error("Error completing lesson:", error);
@@ -113,71 +93,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-async function checkAchievements(userId: string, user: any) {
-  const newAchievements = [];
-
-  // Get all achievements
-  const allAchievements = await prisma.achievement.findMany({
-    where: { isActive: true },
-  });
-
-  // Get user's current achievements
-  const userAchievements = await prisma.userAchievement.findMany({
-    where: { userId },
-    select: { achievementId: true },
-  });
-
-  const unlockedAchievementIds = new Set(
-    userAchievements.map((ua) => ua.achievementId)
-  );
-
-  // Check each achievement
-  for (const achievement of allAchievements) {
-    if (unlockedAchievementIds.has(achievement.id)) continue;
-
-    let shouldUnlock = false;
-
-    switch (achievement.category) {
-      case "xp":
-        shouldUnlock = user.xp >= achievement.requirement;
-        break;
-      case "lessons":
-        shouldUnlock = user.totalLessons >= achievement.requirement;
-        break;
-      case "time":
-        shouldUnlock = user.totalTime >= achievement.requirement;
-        break;
-      case "streak":
-        shouldUnlock = user.streak >= achievement.requirement;
-        break;
-    }
-
-    if (shouldUnlock) {
-      // Create user achievement
-      await prisma.userAchievement.create({
-        data: {
-          userId,
-          achievementId: achievement.id,
-        },
-      });
-
-      // Add XP reward
-      if (achievement.xpReward > 0) {
-        await prisma.user.update({
-          where: { id: userId },
-          data: {
-            xp: {
-              increment: achievement.xpReward,
-            },
-          },
-        });
-      }
-
-      newAchievements.push(achievement);
-    }
-  }
-
-  return newAchievements;
 }

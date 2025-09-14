@@ -78,16 +78,12 @@ export const completeLesson = async (
     throw progressError
   }
 
-  // Update user stats
-  const { error: userError } = await supabaseAdmin
-    .from('users')
-    .update({
-      xp: supabaseAdmin.raw('xp + ?', [totalXpEarned]),
-      total_lessons_completed: supabaseAdmin.raw('total_lessons_completed + 1'),
-      total_time_spent_minutes: supabaseAdmin.raw('total_time_spent_minutes + ?', [Math.floor(timeSpent / 60)]),
-      last_active_at: new Date().toISOString(),
-    })
-    .eq('id', userId)
+  // Update user stats using RPC function
+  const { error: userError } = await supabaseAdmin.rpc('update_user_stats', {
+    user_id: userId,
+    xp_gained: totalXpEarned,
+    time_spent_minutes: Math.floor(timeSpent / 60)
+  })
 
   if (userError) {
     throw userError

@@ -16,7 +16,7 @@ interface HeaderProps {
 export function Header({ user }: HeaderProps) {
   const levelData = user ? calculateLevel(user.xp) : calculateLevel(0);
   const streakData = user
-    ? calculateStreakData(user.lastActiveAt, user.streak)
+    ? calculateStreakData(user.lastActiveAt || null, user.streak)
     : calculateStreakData(null, 0);
 
   return (

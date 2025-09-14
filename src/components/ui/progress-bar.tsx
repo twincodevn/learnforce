@@ -6,6 +6,7 @@ interface ProgressBarProps {
   value: number;
   max?: number;
   className?: string;
+  fillClassName?: string;
   showLabel?: boolean;
   label?: string;
   color?: "default" | "success" | "warning" | "error";
@@ -15,6 +16,7 @@ export function ProgressBar({
   value,
   max = 100,
   className,
+  fillClassName,
   showLabel = false,
   label,
   color = "default",
@@ -40,7 +42,7 @@ export function ProgressBar({
         <div
           className={cn(
             "h-full transition-all duration-300 ease-out rounded-full",
-            colorClasses[color]
+            fillClassName || colorClasses[color]
           )}
           style={{ width: `${percentage}%` }}
         />
