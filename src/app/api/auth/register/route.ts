@@ -39,6 +39,18 @@ export async function POST(request: NextRequest) {
         username,
         email,
         password: hashedPassword,
+        xp: 0,
+        level: 1,
+        current_streak: 0,
+        longest_streak: 0,
+        total_lessons_completed: 0,
+        total_time_spent_minutes: 0,
+        daily_goal_minutes: 15,
+        timezone: 'UTC',
+        language_preference: 'en',
+        is_premium: false,
+        is_active: true,
+        email_verified: false
       })
       .select()
       .single();
