@@ -90,7 +90,7 @@ export function LessonCard({ lesson, progress, isLocked = false }: LessonCardPro
                 Locked
               </Button>
             ) : (
-              <Link href={`/learn/${lesson.id}`} className="block">
+              <Link href={`/lesson/${lesson.id}`} className="block">
                 <Button
                   variant={isCompleted ? "secondary" : "primary"}
                   className="w-full"

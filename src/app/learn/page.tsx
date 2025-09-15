@@ -5,125 +5,91 @@ import { LessonCard } from "@/components/features/lessons/lesson-card";
 import { LeaderboardDisplay } from "@/components/features/leaderboard/leaderboard-display";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Filter, Search } from "lucide-react";
-import { serializeLessonContent } from "@/lib/utils/lesson";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// Mock data - replace with real data from your API
-const mockSubjects = [
-  {
-    id: "1",
-    name: "JavaScript Fundamentals",
-    description: "Learn the basics of JavaScript programming",
-    icon: "📚",
-    color: "blue",
-    totalLessons: 12,
-    completedLessons: 8,
-  },
-  {
-    id: "2",
-    name: "React Development",
-    description: "Master React components and hooks",
-    icon: "⚛️",
-    color: "green",
-    totalLessons: 15,
-    completedLessons: 3,
-  },
-  {
-    id: "3",
-    name: "TypeScript",
-    description: "Type-safe JavaScript development",
-    icon: "🔷",
-    color: "purple",
-    totalLessons: 10,
-    completedLessons: 0,
-  },
-];
+interface Subject {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  totalLessons: number;
+  completedLessons: number;
+  progress: number;
+}
 
-const mockLessons = [
-  {
-    id: "1",
-    subjectId: "1",
-    title: "Variables and Data Types",
-    description: "Learn about JavaScript variables and different data types",
-    content: serializeLessonContent({
-      type: "multiple_choice",
-      question: "What is the correct way to declare a variable in JavaScript?",
-      options: ["var x = 5", "variable x = 5", "v x = 5", "declare x = 5"],
-      correctAnswer: "var x = 5",
-    }),
-    order: 1,
-    xpReward: 10,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2",
-    subjectId: "1",
-    title: "Functions and Scope",
-    description: "Understanding function declarations and variable scope",
-    content: serializeLessonContent({
-      type: "fill_blank",
-      question: "Complete the function to return the sum of two numbers",
-      correctAnswer: "return a + b",
-    }),
-    order: 2,
-    xpReward: 15,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "3",
-    subjectId: "1",
-    title: "Arrays and Loops",
-    description: "Working with arrays and different types of loops",
-    content: serializeLessonContent({
-      type: "multiple_choice",
-      question: "Which method adds an element to the end of an array?",
-      options: ["push()", "pop()", "shift()", "unshift()"],
-      correctAnswer: "push()",
-    }),
-    order: 3,
-    xpReward: 12,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "4",
-    subjectId: "2",
-    title: "React Components",
-    description: "Creating your first React component",
-    content: serializeLessonContent({
-      type: "translation",
-      question: "Convert this HTML to JSX",
-      correctAnswer: "<div className='container'>Hello World</div>",
-    }),
-    order: 1,
-    xpReward: 20,
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
-const mockProgress = {
-  "1": { completed: true, score: 85, xpEarned: 10 },
-  "2": { completed: true, score: 92, xpEarned: 15 },
-  "3": { completed: false, score: 0, xpEarned: 0 },
-  "4": { completed: false, score: 0, xpEarned: 0 },
-};
+interface LessonData {
+  id: string;
+  subjectId: string;
+  title: string;
+  description: string;
+  content: string;
+  order: number;
+  xpReward: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  progress?: {
+    completed: boolean;
+    score?: number;
+    xpEarned?: number;
+    completedAt?: string;
+  } | null;
+}
 
 export default function LearnPage() {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [lessons, setLessons] = useState<LessonData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredLessons = mockLessons.filter((lesson) => {
-    const matchesSubject = !selectedSubject || lesson.subjectId === selectedSubject;
+  // Fetch subjects on component mount
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch('/api/subjects');
+        if (!response.ok) throw new Error('Failed to fetch subjects');
+        const data = await response.json();
+        setSubjects(data);
+      } catch (err) {
+        console.error('Error fetching subjects:', err);
+        setError('Failed to load subjects');
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
+  // Fetch lessons when component mounts or subject changes
+  useEffect(() => {
+    const fetchLessons = async () => {
+      setIsLoading(true);
+      try {
+        const url = selectedSubject 
+          ? `/api/lessons?subjectId=${selectedSubject}`
+          : '/api/lessons';
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch lessons');
+        const data = await response.json();
+        setLessons(data);
+      } catch (err) {
+        console.error('Error fetching lessons:', err);
+        setError('Failed to load lessons');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLessons();
+  }, [selectedSubject]);
+
+  const filteredLessons = lessons.filter((lesson) => {
     const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          lesson.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSubject && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -166,8 +132,13 @@ export default function LearnPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {error && (
+                  <div className="text-red-600 text-center py-4">
+                    {error}
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {mockSubjects.map((subject) => (
+                  {subjects.map((subject) => (
                     <div
                       key={subject.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
@@ -195,7 +166,7 @@ export default function LearnPage() {
                           {subject.completedLessons}/{subject.totalLessons} lessons
                         </span>
                         <span>
-                          {Math.round((subject.completedLessons / subject.totalLessons) * 100)}%
+                          {subject.progress}%
                         </span>
                       </div>
                     </div>
@@ -208,20 +179,58 @@ export default function LearnPage() {
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 {selectedSubject 
-                  ? `${mockSubjects.find(s => s.id === selectedSubject)?.name} Lessons`
+                  ? `${subjects.find(s => s.id === selectedSubject)?.name} Lessons`
                   : "All Lessons"
                 }
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredLessons.map((lesson) => (
-                  <LessonCard
-                    key={lesson.id}
-                    lesson={lesson}
-                    progress={mockProgress[lesson.id as keyof typeof mockProgress]}
-                    isLocked={false}
-                  />
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-32 bg-gray-200 rounded-lg"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredLessons.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {filteredLessons.map((lesson) => (
+                    <LessonCard
+                      key={lesson.id}
+                      lesson={{
+                        id: lesson.id,
+                        subjectId: lesson.subjectId,
+                        title: lesson.title,
+                        description: lesson.description,
+                        content: lesson.content,
+                        order: lesson.order,
+                        xpReward: lesson.xpReward,
+                        isActive: lesson.isActive,
+                        createdAt: new Date(lesson.createdAt),
+                        updatedAt: new Date(lesson.updatedAt)
+                      }}
+                      progress={lesson.progress ? {
+                        completed: lesson.progress.completed,
+                        score: lesson.progress.score || 0,
+                        xpEarned: lesson.progress.xpEarned || 0
+                      } : undefined}
+                      isLocked={false}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-600">
+                  <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                  <p>No lessons found matching your criteria.</p>
+                  {selectedSubject && (
+                    <button
+                      onClick={() => setSelectedSubject(null)}
+                      className="text-blue-600 hover:underline mt-2"
+                    >
+                      Show all lessons
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

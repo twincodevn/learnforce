@@ -13,7 +13,7 @@ import {
   Volume2,
   Lightbulb
 } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils/cn';
 import { colors } from '@/lib/design-system/colors';
 

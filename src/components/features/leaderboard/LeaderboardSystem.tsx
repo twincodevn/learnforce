@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Trophy, 
-  Crown, 
-  Medal, 
-  Star, 
-  Users, 
-  Globe, 
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Trophy,
+  Crown,
+  Medal,
+  Star,
+  Users,
+  Globe,
   Calendar,
   Zap,
   Target,
@@ -16,11 +16,11 @@ import {
   Shield,
   Swords,
   UserPlus,
-  Filter
-} from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { cn } from '@/lib/utils/cn';
-import { getLevelColor } from '@/lib/design-system/colors';
+  Filter,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils/cn";
+import { getLevelColor } from "@/lib/design-system/colors";
 
 interface LeaderboardUser {
   id: string;
@@ -42,7 +42,7 @@ interface LeaderboardUser {
 interface League {
   id: string;
   name: string;
-  tier: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'legendary';
+  tier: "bronze" | "silver" | "gold" | "platinum" | "diamond" | "legendary";
   color: string;
   minXp: number;
   maxXp: number;
@@ -57,7 +57,7 @@ interface Challenge {
   timeLimit: string;
   participants: number;
   reward: string;
-  status: 'active' | 'completed' | 'upcoming';
+  status: "active" | "completed" | "upcoming";
   userProgress?: number;
 }
 
@@ -69,8 +69,8 @@ interface LeaderboardSystemProps {
   onJoinChallenge: (challengeId: string) => void;
 }
 
-type Period = 'daily' | 'weekly' | 'monthly' | 'all-time';
-type View = 'global' | 'friends' | 'league';
+type Period = "daily" | "weekly" | "monthly" | "all-time";
+type View = "global" | "friends" | "league";
 
 export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
   currentUser,
@@ -79,21 +79,23 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
   onChallengeUser,
   onJoinChallenge,
 }) => {
-  const [period, setPeriod] = useState<Period>('weekly');
-  const [view, setView] = useState<View>('global');
+  const [period, setPeriod] = useState<Period>("weekly");
+  const [view, setView] = useState<View>("global");
   const [users, setUsers] = useState<LeaderboardUser[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState<'leaderboard' | 'leagues' | 'challenges'>('leaderboard');
+  const [selectedTab, setSelectedTab] = useState<
+    "leaderboard" | "leagues" | "challenges"
+  >("leaderboard");
 
   // Mock data - replace with actual API calls
   useEffect(() => {
     const mockUsers: LeaderboardUser[] = [
       {
-        id: '1',
-        username: 'CodeMaster',
-        name: 'Alex Johnson',
-        avatar: '/avatars/alex.jpg',
+        id: "1",
+        username: "CodeMaster",
+        name: "Alex Johnson",
+        avatar: "/avatars/alex.jpg",
         xp: 15420,
         level: 47,
         streak: 23,
@@ -101,13 +103,21 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
         rank: 1,
         weeklyXp: 2840,
         monthlyXp: 8950,
-        league: { id: 'diamond', name: 'Diamond League', tier: 'diamond', color: '#8B5CF6', minXp: 10000, maxXp: 20000, rewards: ['Premium access', 'Exclusive badges'] },
+        league: {
+          id: "diamond",
+          name: "Diamond League",
+          tier: "diamond",
+          color: "#8B5CF6",
+          minXp: 10000,
+          maxXp: 20000,
+          rewards: ["Premium access", "Exclusive badges"],
+        },
         isFriend: true,
       },
       {
-        id: '2',
-        username: 'ReactNinja',
-        name: 'Sarah Chen',
+        id: "2",
+        username: "ReactNinja",
+        name: "Sarah Chen",
         xp: 14850,
         level: 45,
         streak: 31,
@@ -115,12 +125,20 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
         rank: 2,
         weeklyXp: 2650,
         monthlyXp: 8430,
-        league: { id: 'diamond', name: 'Diamond League', tier: 'diamond', color: '#8B5CF6', minXp: 10000, maxXp: 20000, rewards: ['Premium access', 'Exclusive badges'] },
+        league: {
+          id: "diamond",
+          name: "Diamond League",
+          tier: "diamond",
+          color: "#8B5CF6",
+          minXp: 10000,
+          maxXp: 20000,
+          rewards: ["Premium access", "Exclusive badges"],
+        },
         isFriend: false,
         isFollowing: true,
       },
       {
-        id: 'current',
+        id: "current",
         username: currentUser.username,
         name: currentUser.name,
         xp: currentUser.xp,
@@ -130,42 +148,50 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
         rank: 8,
         weeklyXp: 1850,
         monthlyXp: 6200,
-        league: { id: 'gold', name: 'Gold League', tier: 'gold', color: '#F59E0B', minXp: 5000, maxXp: 10000, rewards: ['Gold badges', 'Special themes'] },
+        league: {
+          id: "gold",
+          name: "Gold League",
+          tier: "gold",
+          color: "#F59E0B",
+          minXp: 5000,
+          maxXp: 10000,
+          rewards: ["Gold badges", "Special themes"],
+        },
       },
     ];
 
     const mockChallenges: Challenge[] = [
       {
-        id: '1',
-        title: 'Weekend Warrior',
-        description: 'Complete 10 lessons this weekend',
+        id: "1",
+        title: "Weekend Warrior",
+        description: "Complete 10 lessons this weekend",
         targetXp: 500,
-        timeLimit: '2 days',
+        timeLimit: "2 days",
         participants: 1247,
-        reward: '100 XP Bonus',
-        status: 'active',
+        reward: "100 XP Bonus",
+        status: "active",
         userProgress: 3,
       },
       {
-        id: '2',
-        title: 'Streak Master',
-        description: 'Maintain a 7-day streak',
+        id: "2",
+        title: "Streak Master",
+        description: "Maintain a 7-day streak",
         targetXp: 0,
-        timeLimit: '7 days',
+        timeLimit: "7 days",
         participants: 892,
-        reward: 'Streak Badge',
-        status: 'active',
+        reward: "Streak Badge",
+        status: "active",
         userProgress: 3,
       },
       {
-        id: '3',
-        title: 'Lightning Round',
-        description: 'Earn 1000 XP in 24 hours',
+        id: "3",
+        title: "Lightning Round",
+        description: "Earn 1000 XP in 24 hours",
         targetXp: 1000,
-        timeLimit: '1 day',
+        timeLimit: "1 day",
         participants: 523,
-        reward: 'Lightning Badge',
-        status: 'upcoming',
+        reward: "Lightning Badge",
+        status: "upcoming",
       },
     ];
 
@@ -176,37 +202,59 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
-      case 1: return <Crown className="w-6 h-6 text-yellow-500" />;
-      case 2: return <Medal className="w-6 h-6 text-gray-400" />;
-      case 3: return <Medal className="w-6 h-6 text-amber-600" />;
-      default: return <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-gray-500">#{rank}</span>;
+      case 1:
+        return <Crown className="w-6 h-6 text-yellow-500" />;
+      case 2:
+        return <Medal className="w-6 h-6 text-gray-400" />;
+      case 3:
+        return <Medal className="w-6 h-6 text-amber-600" />;
+      default:
+        return (
+          <span className="w-6 h-6 flex items-center justify-center text-sm font-bold text-gray-500">
+            #{rank}
+          </span>
+        );
     }
   };
 
   const getLeagueBadge = (league: League) => (
-    <div className={cn(
-      'px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1',
-      `bg-${league.tier === 'gold' ? 'yellow' : league.tier === 'silver' ? 'gray' : league.tier}-100 text-${league.tier === 'gold' ? 'yellow' : league.tier === 'silver' ? 'gray' : league.tier}-800`
-    )}>
+    <div
+      className={cn(
+        "px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1",
+        `bg-${
+          league.tier === "gold"
+            ? "yellow"
+            : league.tier === "silver"
+            ? "gray"
+            : league.tier
+        }-100 text-${
+          league.tier === "gold"
+            ? "yellow"
+            : league.tier === "silver"
+            ? "gray"
+            : league.tier
+        }-800`
+      )}
+    >
       <Shield className="w-3 h-3" />
       <span>{league.name}</span>
     </div>
   );
 
-  const UserRow: React.FC<{ user: LeaderboardUser; index: number; isCurrentUser: boolean }> = ({ 
-    user, 
-    index, 
-    isCurrentUser 
-  }) => (
+  const UserRow: React.FC<{
+    user: LeaderboardUser;
+    index: number;
+    isCurrentUser: boolean;
+  }> = ({ user, index, isCurrentUser }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className={cn(
-        'flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md',
-        isCurrentUser 
-          ? 'bg-gradient-to-r from-green-50 to-blue-50 border-green-200 ring-2 ring-green-200' 
-          : 'bg-white border-gray-200 hover:border-gray-300'
+        "flex items-center justify-between p-4 rounded-xl border transition-all duration-200 hover:shadow-md",
+        isCurrentUser
+          ? "bg-gradient-to-r from-green-50 to-blue-50 border-green-200 ring-2 ring-green-200"
+          : "bg-white border-gray-200 hover:border-gray-300"
       )}
     >
       <div className="flex items-center space-x-4 flex-1">
@@ -218,7 +266,11 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
         {/* Avatar */}
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
           {user.avatar ? (
-            <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="w-full h-full rounded-full object-cover"
+            />
           ) : (
             user.name.charAt(0).toUpperCase()
           )}
@@ -227,9 +279,14 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
         {/* User Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2">
-            <h3 className="font-semibold text-gray-900 truncate">{user.username}</h3>
+            <h3 className="font-semibold text-gray-900 truncate">
+              {user.username}
+            </h3>
             {user.isFriend && (
-              <div className="w-2 h-2 bg-green-500 rounded-full" title="Friend" />
+              <div
+                className="w-2 h-2 bg-green-500 rounded-full"
+                title="Friend"
+              />
             )}
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -248,7 +305,10 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
       {/* Stats & Actions */}
       <div className="flex items-center space-x-4">
         <div className="text-right">
-          <div className="font-bold text-lg" style={{ color: getLevelColor(user.level) }}>
+          <div
+            className="font-bold text-lg"
+            style={{ color: getLevelColor(user.level) }}
+          >
             {user.weeklyXp.toLocaleString()}
           </div>
           <div className="text-xs text-gray-500">XP this week</div>
@@ -263,7 +323,7 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
             >
               View
             </Button>
-            
+
             {!user.isFriend && (
               <Button
                 variant={user.isFollowing ? "secondary" : "primary"}
@@ -277,7 +337,7 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
                 )}
               </Button>
             )}
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -296,12 +356,12 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        'p-6 rounded-xl border-2 transition-all duration-200',
-        challenge.status === 'active' 
-          ? 'border-green-200 bg-green-50' 
-          : challenge.status === 'upcoming'
-          ? 'border-blue-200 bg-blue-50'
-          : 'border-gray-200 bg-gray-50'
+        "p-6 rounded-xl border-2 transition-all duration-200",
+        challenge.status === "active"
+          ? "border-green-200 bg-green-50"
+          : challenge.status === "upcoming"
+          ? "border-blue-200 bg-blue-50"
+          : "border-gray-200 bg-gray-50"
       )}
     >
       <div className="flex items-start justify-between mb-4">
@@ -309,14 +369,16 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
           <h3 className="font-bold text-lg text-gray-900">{challenge.title}</h3>
           <p className="text-gray-600 text-sm">{challenge.description}</p>
         </div>
-        <div className={cn(
-          'px-2 py-1 rounded-full text-xs font-semibold',
-          challenge.status === 'active' 
-            ? 'bg-green-100 text-green-800'
-            : challenge.status === 'upcoming'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-gray-100 text-gray-800'
-        )}>
+        <div
+          className={cn(
+            "px-2 py-1 rounded-full text-xs font-semibold",
+            challenge.status === "active"
+              ? "bg-green-100 text-green-800"
+              : challenge.status === "upcoming"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-gray-100 text-gray-800"
+          )}
+        >
           {challenge.status}
         </div>
       </div>
@@ -344,25 +406,35 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Progress</span>
-              <span>{challenge.userProgress}/{challenge.targetXp || 10}</span>
+              <span>
+                {challenge.userProgress}/{challenge.targetXp || 10}
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-green-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${Math.min((challenge.userProgress / (challenge.targetXp || 10)) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min(
+                    (challenge.userProgress / (challenge.targetXp || 10)) * 100,
+                    100
+                  )}%`,
+                }}
               />
             </div>
           </div>
         )}
 
         <Button
-          variant={challenge.status === 'active' ? 'primary' : 'outline'}
+          variant={challenge.status === "active" ? "primary" : "outline"}
           fullWidth
           onClick={() => onJoinChallenge(challenge.id)}
-          disabled={challenge.status === 'completed'}
+          disabled={challenge.status === "completed"}
         >
-          {challenge.status === 'active' ? 'Continue Challenge' : 
-           challenge.status === 'upcoming' ? 'Join Challenge' : 'Completed'}
+          {challenge.status === "active"
+            ? "Continue Challenge"
+            : challenge.status === "upcoming"
+            ? "Join Challenge"
+            : "Completed"}
         </Button>
       </div>
     </motion.div>
@@ -387,14 +459,14 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
       {/* Tab Navigation */}
       <div className="flex items-center justify-center">
         <div className="bg-gray-100 p-1 rounded-xl">
-          {(['leaderboard', 'leagues', 'challenges'] as const).map((tab) => (
+          {(["leaderboard", "leagues", "challenges"] as const).map((tab) => (
             <button
               key={tab}
               className={cn(
-                'px-4 py-2 rounded-lg font-medium transition-all duration-200 capitalize',
+                "px-4 py-2 rounded-lg font-medium transition-all duration-200 capitalize",
                 selectedTab === tab
-                  ? 'bg-white text-green-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? "bg-white text-green-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
               )}
               onClick={() => setSelectedTab(tab)}
             >
@@ -406,7 +478,7 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
 
       {/* Content */}
       <AnimatePresence mode="wait">
-        {selectedTab === 'leaderboard' && (
+        {selectedTab === "leaderboard" && (
           <motion.div
             key="leaderboard"
             initial={{ opacity: 0, y: 20 }}
@@ -418,36 +490,40 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
             <div className="flex flex-wrap gap-4 justify-center">
               {/* Period Filter */}
               <div className="flex bg-white rounded-xl border border-gray-200 p-1">
-                {(['daily', 'weekly', 'monthly', 'all-time'] as const).map((p) => (
-                  <button
-                    key={p}
-                    className={cn(
-                      'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 capitalize',
-                      period === p
-                        ? 'bg-green-500 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
-                    )}
-                    onClick={() => setPeriod(p)}
-                  >
-                    {p.replace('-', ' ')}
-                  </button>
-                ))}
+                {(["daily", "weekly", "monthly", "all-time"] as const).map(
+                  (p) => (
+                    <button
+                      key={p}
+                      className={cn(
+                        "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 capitalize",
+                        period === p
+                          ? "bg-green-500 text-white"
+                          : "text-gray-600 hover:text-gray-900"
+                      )}
+                      onClick={() => setPeriod(p)}
+                    >
+                      {p.replace("-", " ")}
+                    </button>
+                  )
+                )}
               </div>
 
               {/* View Filter */}
               <div className="flex bg-white rounded-xl border border-gray-200 p-1">
-                {([
-                  { key: 'global', icon: Globe, label: 'Global' },
-                  { key: 'friends', icon: Users, label: 'Friends' },
-                  { key: 'league', icon: Shield, label: 'League' },
-                ] as const).map(({ key, icon: Icon, label }) => (
+                {(
+                  [
+                    { key: "global", icon: Globe, label: "Global" },
+                    { key: "friends", icon: Users, label: "Friends" },
+                    { key: "league", icon: Shield, label: "League" },
+                  ] as const
+                ).map(({ key, icon: Icon, label }) => (
                   <button
                     key={key}
                     className={cn(
-                      'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1',
+                      "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center space-x-1",
                       view === key
-                        ? 'bg-blue-500 text-white'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-600 hover:text-gray-900"
                     )}
                     onClick={() => setView(key)}
                   >
@@ -461,11 +537,13 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
             {/* Current User Highlight */}
             <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-xl p-1">
               <div className="bg-white rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-3">Your Position</h3>
-                <UserRow 
-                  user={users.find(u => u.id === 'current') || currentUser} 
-                  index={0} 
-                  isCurrentUser={true} 
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  Your Position
+                </h3>
+                <UserRow
+                  user={users.find((u) => u.id === "current") || currentUser}
+                  index={0}
+                  isCurrentUser={true}
                 />
               </div>
             </div>
@@ -473,21 +551,21 @@ export const LeaderboardSystem: React.FC<LeaderboardSystemProps> = ({
             {/* Leaderboard */}
             <div className="space-y-3">
               {users
-                .filter(u => u.id !== 'current')
+                .filter((u) => u.id !== "current")
                 .slice(0, 10)
                 .map((user, index) => (
-                  <UserRow 
-                    key={user.id} 
-                    user={user} 
-                    index={index} 
-                    isCurrentUser={false} 
+                  <UserRow
+                    key={user.id}
+                    user={user}
+                    index={index}
+                    isCurrentUser={false}
                   />
                 ))}
             </div>
           </motion.div>
         )}
 
-        {selectedTab === 'challenges' && (
+        {selectedTab === "challenges" && (
           <motion.div
             key="challenges"
             initial={{ opacity: 0, y: 20 }}

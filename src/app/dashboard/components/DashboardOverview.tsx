@@ -90,133 +90,75 @@ export function DashboardOverview() {
     const fetchDashboardData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await fetch('/api/dashboard', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
-        const mockData: DashboardData = {
+        if (!response.ok) {
+          throw new Error('Failed to fetch dashboard data');
+        }
+        
+        const data = await response.json();
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Fallback to basic data structure if API fails
+        setDashboardData({
           user: {
-            name: user?.name || 'John Doe',
-            username: (user as any)?.username || 'johndoe',
-            level: 4,
-            xp: 1250,
-            streak: 7,
+            name: user?.name || 'Unknown User',
+            username: (user as any)?.username || 'unknown',
+            level: 1,
+            xp: 0,
+            streak: 0,
             avatar: user?.image || undefined
           },
           stats: {
-            totalLessons: 45,
-            timeSpent: 12.5, // hours
-            weeklyXP: 140,
-            monthlyXP: 600,
-            rank: 1247,
-            totalUsers: 50000
+            totalLessons: 0,
+            timeSpent: 0,
+            weeklyXP: 0,
+            monthlyXP: 0,
+            rank: 0,
+            totalUsers: 0
           },
-          recentActivity: [
-            {
-              id: '1',
-              type: 'lesson',
-              title: 'Completed AWS Basics Lesson 3',
-              description: 'You earned 25 XP!',
-              timestamp: '2 hours ago',
-              xp: 25
-            },
-            {
-              id: '2',
-              type: 'achievement',
-              title: 'Achievement Unlocked!',
-              description: 'Week Warrior - 7 day streak',
-              timestamp: '1 day ago'
-            },
-            {
-              id: '3',
-              type: 'xp',
-              title: 'Level Up!',
-              description: 'You reached Level 4!',
-              timestamp: '2 days ago'
-            }
-          ],
-          friendsActivity: [
-            {
-              id: '1',
-              name: 'Sarah Johnson',
-              username: 'sarahj',
-              action: 'completed a lesson',
-              timestamp: '30 minutes ago',
-              xp: 20
-            },
-            {
-              id: '2',
-              name: 'Mike Chen',
-              username: 'mikec',
-              action: 'unlocked an achievement',
-              timestamp: '1 hour ago'
-            },
-            {
-              id: '3',
-              name: 'Emma Wilson',
-              username: 'emmaw',
-              action: 'reached a new level',
-              timestamp: '3 hours ago',
-              xp: 100
-            }
-          ],
+          recentActivity: [],
+          friendsActivity: [],
           dailyGoals: [
             {
-              id: '1',
+              id: 'lessons',
               title: 'Complete 3 lessons',
-              completed: true,
+              completed: false,
               xp: 15,
-              progress: 100
+              progress: 0
             },
             {
-              id: '2',
-              title: 'Earn 20 XP',
-              completed: true,
+              id: 'xp',
+              title: 'Earn 50 XP',
+              completed: false,
               xp: 20,
-              progress: 100
+              progress: 0
             },
             {
-              id: '3',
+              id: 'time',
               title: 'Study for 30 minutes',
               completed: false,
               xp: 10,
-              progress: 60
+              progress: 0
             }
           ],
-          recentAchievements: [
-            {
-              id: '1',
-              title: 'Week Warrior',
-              description: 'Maintain a 7-day streak',
-              icon: 'flame',
-              unlockedAt: '2024-01-20'
-            },
-            {
-              id: '2',
-              title: 'XP Collector',
-              description: 'Earn your first 100 XP',
-              icon: 'star',
-              unlockedAt: '2024-01-18'
-            }
-          ],
-          continueLearning: {
-            subjectId: 'aws-basics',
-            subjectName: 'AWS Fundamentals',
-            lessonId: 'lesson-4',
-            lessonTitle: 'EC2 Instances Deep Dive',
-            progress: 65,
-            difficulty: 'intermediate'
-          }
-        };
-        
-        setDashboardData(mockData);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+          recentAchievements: [],
+          continueLearning: null
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDashboardData();
+    if (user) {
+      fetchDashboardData();
+    }
   }, [user]);
 
   if (isLoading) {

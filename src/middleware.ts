@@ -25,6 +25,8 @@ export default withAuth(
         const publicApiRoutes = [
           '/api/auth/register',
           '/api/test-supabase',
+          '/api/init-db',
+          '/api/seed-data',
         ];
         
         // If it's a public route, allow access
